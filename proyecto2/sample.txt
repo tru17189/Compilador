@@ -1,0 +1,22 @@
+class Program {
+    int a;
+    boolean b;
+    int num[3];
+
+    struct my_struct {
+        int c;
+        char d;
+    }
+
+    void main() {
+        a = 0;
+        b = true;
+
+        while (a < 10) {
+            a = a - 1;
+        }
+
+        b = false;
+        return;
+    }
+}
