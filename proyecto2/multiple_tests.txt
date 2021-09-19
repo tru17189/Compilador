@@ -3,7 +3,7 @@ class Program
 
 struct A
 {
-	char a;
+	int a;
 };
 
 struct B
