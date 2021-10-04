@@ -1,6 +1,5 @@
 class Program {
     int a;
-    int x;
     boolean b;
     int num[3];
 
@@ -15,7 +14,6 @@ class Program {
 
         while (a < 10) {
             a = a - 1;
-            x = a + b - (b + c) * (c + a);
         }
 
         b = false;

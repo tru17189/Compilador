@@ -15,7 +15,7 @@ struct B
 struct A y;
 struct A z;
 
-void main(void)
+void main()
 {
 	struct B y[5];
 	int i;

@@ -1,5 +1,3 @@
-from codecs import decode
-from os import truncate
 import sys
 from tkinter import *
 from typing import get_origin
@@ -155,7 +153,6 @@ def traverse(tree, rule_names, indent = 0):
         
         if ProbablyWord == "T='struct'":
             structD = True 
-        
         # print("{0}T='{1}'".format("  " * indent, tree.getText()))
 
     else:
@@ -469,7 +466,7 @@ def Second_Run(tree_2, rule_names, indent = 0):
             contador3 += 1
             if contador3 == 1:
                 variableLlamada = tree_2.getText()
-                if variableLlamada in simbolos_ignorados:
+                if (variableLlamada in simbolos_ignorados) or (variableLlamada in lista_numeros):
                     pass
                 elif (variableLlamada == "return") or (variableLlamada == "if") or (variableLlamada == "while"):
                     pass
@@ -487,22 +484,6 @@ def Second_Run(tree_2, rule_names, indent = 0):
                 contador3 = 0
                 statement = False
                 location3 = False
-        
-        # Los tipos de operandos para los operadores <arith_op> y <rel_op> deben de ser int.
-        '''if location == True:
-            if tree_2.getText() == "<":
-                pass
-            else:
-                LeftWord = tree_2.getText()
-            location = False
-        if rel_op == True:
-            contador3 += 1
-            if contador3 == 1:
-                RightWord = tree_2.getText()
-                print(LeftWord)
-                print(RightWord)
-                rel_op = False
-                contador3 = 0'''
 
         if ProbablyWord == "T='['":
             IsThereRightKey = True
@@ -538,179 +519,7 @@ def Second_Run(tree_2, rule_names, indent = 0):
             for child in tree_2.children:
                 Second_Run(child, rule_names, indent + 1)    
 
-###############################
-#Comienza el segundo proyecto #
-###############################
-
-def Function(arg):
-    send_file = []
-    ans1 = "\n\n.globl %s" % arg
-    send_file.append(ans1)
-    ans = "\n%s: " % arg
-    send_file.append(ans)
-    return send_file
-
-def Commmon_Declaration(declaration, posicion_memoria, direcciones_memoria):
-    begin = False
-    sentence = ""
-    send_file = []
-
-    a = ""
-    b = ""
-    c = 0
-    # procedencia de operadores -> ()
-    for i in declaration:
-        if i == ")":
-            send_file.append("\n%s = %s" %(direcciones_memoria[posicion_memoria], sentence))
-            a = "(%s)" % sentence
-            declaration = declaration.replace(a, direcciones_memoria[posicion_memoria])
-            posicion_memoria += 1
-            begin = False
-        if begin == True:
-            sentence += i
-        if i == "(":
-            sentence = ""
-            begin = True
-    
-    # procedencia de operadores -> *
-    for i in declaration:
-        if i == "*":
-            if (declaration[c-2] == "t") or (declaration[c-2] == "s"):
-                a = declaration[c-2]+declaration[c-1]
-            else:
-                a = declaration[c-1]
-            if (declaration[c+1] == "t") or (declaration[c+1] == "s"):
-                b = declaration[c+1]+declaration[c+2]
-            else:
-                b = declaration[c+1]
-            sentence = "%s%s%s" % (a, i, b)
-
-            send_file.append("\n%s = %s" % (direcciones_memoria[posicion_memoria], sentence))
-            declaration = declaration.replace(sentence, direcciones_memoria[posicion_memoria])
-            posicion_memoria += 1
-        c += 1
-    c = 0
-    
-    # procedencia de operadores -> /
-    for i in declaration:
-        if i == "/":
-            if (declaration[c-2] == "t") or (declaration[c-2] == "s"):
-                a = declaration[c-2]+declaration[c-1]
-            else:
-                a = declaration[c-1]
-            if (declaration[c+1] == "t") or (declaration[c+1] == "s"):
-                b = declaration[c+1]+declaration[c+2]
-            else:
-                b = declaration[c+1]
-            sentence = "%s%s%s" % (a, i, b)
-
-            send_file.append("\n%s = %s" % (direcciones_memoria[posicion_memoria], sentence))
-            declaration = declaration.replace(sentence, direcciones_memoria[posicion_memoria])
-            posicion_memoria += 1
-        c += 1
-    c = 0
-
-    # procedencia de operadores -> +
-    for i in declaration:
-        if i == "+":
-            if (declaration[c-2] == "t") or (declaration[c-2] == "s"):
-                a = declaration[c-2]+declaration[c-1]
-            else:
-                a = declaration[c-1]
-            if (declaration[c+1] == "t") or (declaration[c+1] == "s"):
-                b = declaration[c+1]+declaration[c+2]
-            else:
-                b = declaration[c+1]
-            sentence = "%s%s%s" % (a, i, b)
-
-            send_file.append("\n%s = %s" % (direcciones_memoria[posicion_memoria], sentence))
-            declaration = declaration.replace(sentence, direcciones_memoria[posicion_memoria])
-            posicion_memoria += 1
-        c += 1
-    c = 0
-
-    # procedencia de operadores -> -
-    for i in declaration:
-        if i == "-":
-            if (declaration[c-2] == "t") or (declaration[c-2] == "s"):
-                a = declaration[c-2]+declaration[c-1]
-            else:
-                a = declaration[c-1]
-            if (declaration[c+1] == "t") or (declaration[c+1] == "s"):
-                b = declaration[c+1]+declaration[c+2]
-            else:
-                b = declaration[c+1]
-            sentence = "%s%s%s" % (a, i, b)
-
-            send_file.append("\n%s = %s" % (direcciones_memoria[posicion_memoria], sentence))
-            declaration = declaration.replace(sentence, direcciones_memoria[posicion_memoria])
-            posicion_memoria += 1
-        c += 1
-    c = 0
-    
-    return send_file, posicion_memoria
-
-def Acciones(declaration, acciones, fuction_counter):
-    send_file = []
-    options = ["<", ">", "<=", ">=", "=="]
-    arg1 = ""
-    arg2 = ""
-    arg3 = ""
-    next_to_action = ""
-    c = 0
-    sentence = ""
-    
-    for i in declaration:
-        sentence += i
-        if sentence in acciones:
-            arg1 = sentence
-            sentence = ""
-        if i in options:
-            arg2 += declaration[c-1]
-            arg3 += declaration[c+1]
-            if i == "<":
-                symbol = "blt"
-            elif i == ">":
-                symbol = "bgt"
-            elif i == "<=":
-                symbol = "ble"
-            elif i == ">=":
-                symbol = "bge"
-            elif i == "==":
-                symbol = "beq"
-            next_to_action = "\n\nL%s: " % fuction_counter
-            ans2 = "L%s" % fuction_counter
-            ans = "\n%s %s %s %s %s" % (arg1, arg2, symbol, arg3, ans2)
-            send_file.append(ans)
-            fuction_counter += 1
-        c += 1
-    return send_file, next_to_action, fuction_counter
-    
-
-varDeclaration = False
-SignDeclaration = False
-methodDeclaration = False
-methodType = False 
-
-statement = False
-location = False 
-
-expression = False
-literal = False
-
-send_file = []
-arg1 = ""
-arg2 = ""
-arg3 = ""
-doing = ""
-offset_counter = 0
-posicion_memoria = 0
-direcciones_memoria = ["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "s0", 
-                        "s1", "s2", "s3", "s4", "s5", "s6", "s7", "t8", "t9"]
-declaration = ""
-fuction_counter = 1
-next_to_action = ""
-
+# Comienza el proyecto dos!!!!!! #
 def ThirdMain(argv):
     input_stream = FileStream(argv)
     lexer = DecafLexer(input_stream)
@@ -725,97 +534,12 @@ def ThirdMain(argv):
     CodigoTresDirreciones(tree, parser.ruleNames)
 
 def CodigoTresDirreciones(tree, rule_names, indent = 0):
-    global arg1
-    global arg2
-    global arg3
-    global doing 
-    global varDeclaration
-    global SignDeclaration
-    global methodDeclaration
-    global methodType
-    global send_file
-    global statement
-    global location
-    global expression 
-    global literal
-
-    global declaration
-    global posicion_memoria
-    global fuction_counter
-    global next_to_action
-    simbolos_ignorados = [";", "!", "," ".", "[", "]", "{", "}", "(", ")", "*", "-", ".", "+", "/", ","]
-    acciones = ["if", "while", "for"]
     if tree.getText() == "<EOF>":
         return
     elif isinstance(tree, TerminalNode):
-        ProbablyWord = "T='{1}'".format("  " * indent, tree.getText())
-        arg3 = arg2
-        arg2 = arg1 
-        arg1 = tree.getText()
-
-        # Creacion de definicion
-        if (methodDeclaration == True) and (SignDeclaration == True):
-            if arg1 in MethodSymbolTable["methodId"]:
-                n = Function(arg1)
-                for i in n:
-                    send_file.append(i)
-                methodDeclaration = False
-                SignDeclaration = False
-        
-        # Acciones
-        if statement == True:
-            if tree.getText() in acciones:
-                doing = tree.getText()
-            if tree.getText() == "{":
-                n, next_to_action, fuction_counter = Acciones(declaration, acciones, fuction_counter)
-                for i in n:
-                    send_file.append(i)
-                declaration = ""
-                doing = ""
-                statement = False
-            if len(doing) > 0:
-                declaration += tree.getText()
-        
-        if len(next_to_action) > 0:
-            if tree.getText() == "}":
-                send_file.append(next_to_action)
-                next_to_action = ""
-        
-        if location == True and statement == True:
-            if len(doing) <= 0:
-                if tree.getText() == "{":
-                    declaration = ""
-                elif tree.getText() != ";":
-                    declaration += tree.getText()
-                else: 
-                    n, posicion_memoria = Commmon_Declaration(declaration, posicion_memoria, direcciones_memoria)
-                    for i in n:
-                        send_file.append(i)
-                    declaration = ""
-                    location = False
-                    statement = False
-
-        print("{0}T='{1}'".format("  " * indent, tree.getText()))
+        print("{0}Q='{1}'".format("  " * indent, tree.getText()))
     else:
-        ProbablyWord = "R='{1}'".format("  " * indent, rule_names[tree.getRuleIndex()])
-        if ProbablyWord == "R='methodDeclaration'":
-            methodDeclaration = True
-        if ProbablyWord == "R='declaration'":
-            SignDeclaration = True
-        if ProbablyWord == "R='methodType'":
-            methodType = True
-        if ProbablyWord == "R='statement'":
-            statement = True
-        if ProbablyWord == "R='location'":
-            location = True 
-        if ProbablyWord == "R='expression'":
-            expression = True
-        if ProbablyWord == "R='literal'":
-            literal = True
-        if ProbablyWord == "R='varDeclaration'":
-            varDeclaration = True
-
-        print("{0}R='{1}'".format("  " * indent, rule_names[tree.getRuleIndex()]))
+        print("{0}A='{1}'".format("  " * indent, rule_names[tree.getRuleIndex()]))
         if (tree.children != None):
             for child in tree.children:
                 CodigoTresDirreciones(child, rule_names, indent + 1)
@@ -824,6 +548,7 @@ def Take_input():
 	clean()
 	archivo = FilenameInput.get("1.0", "end-1c")
 	archivo2 = FilenameInput.get("1.0", "end-1c")
+	archivo3 = archivo2
 	if __name__ == '__main__':
 		main(archivo)
 
@@ -837,13 +562,11 @@ def Take_input():
 		print("\n\n")
 		print("Tabla de simbolos (struct)")
 		print(StructSymbolTable)
+		print("\nComienzo del segundo recorrido\n")
+		input()
 		SecondMain(archivo2)
 		input()
-		print("\nComienzo codigo de 3 dirrecciones\n")
-		ThirdMain(archivo2)
-		f = open("Codigo_3_direcciones.txt", "w")
-		for i in send_file:
-			f.write(i)
+		ThirdMain(archivo3)
 		print("FIN DEL RECORRIDO")
 
 def Take_input_v2():

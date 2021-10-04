@@ -1,0 +1,13 @@
+
+
+.globl main
+main: 
+while a blt 1 L1
+t0 = a-1
+t1 = b+c
+t2 = c+a
+t3 = t1*t2
+t4 = a+b
+t5 = t4-t3
+
+L1: 
