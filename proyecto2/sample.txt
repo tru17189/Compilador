@@ -1,24 +1,18 @@
 class Program {
-    int a;
-    int x;
-    boolean b;
-    int num[3];
-
-    struct my_struct {
-        int c;
-        char d;
-    }
-
-    void main() {
-        a = 0;
-        b = true;
-
-        while (a < 10) {
-            a = a - 1;
-            x = a + b - (b + c) * (c + a);
+    int funcion(int a){
+        a = a * 10 - a / 10;
+        if (a == 0){
+            return 10;
+        } else {
+            return a;
         }
-
-        b = false;
-        return;
+        return funcion(a);
+    }
+    
+    void main() {
+        int x;
+        int y[10];
+	    y[2] = 2;
+        x = funcion(y);
     }
 }

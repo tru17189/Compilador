@@ -1,13 +1,58 @@
 
-
-.globl main
 main: 
-while a blt 1 L1
-t0 = a-1
-t1 = b+c
-t2 = c+a
-t3 = t1*t2
-t4 = a+b
-t5 = t4-t3
+	fp[0] = 0 
+	fp[4] = 0 
+	t4 = 0 + 0
+	fp[t0]=3
+	t5 = fp[0]<=10
+	L1: 
+	while t5 goto L2
+	goto L3
+	L2:
+	call InputInt, 1
+	t6 = y
+	b = t6
+	t7 = y[fp[4]].fp[8][0]==5
+	if t7 goto L4
+	goto L5
+	L4: 
+	
+	fp[12] = factorial ( ReturnNumber ( ) ) 
+	param ReturnNumber(
+	call ReturnNumber, 1
+	s0 = y
+	fp[12] = s0
+	L5: 
+	param y[fp[4]].fp[8][0]
+	call factorial, 1
+	s1 = y
+	a = s1
+factorial: 
+	param intn
+	call factorial, 1
+	s2 = y
+	fp[0] = s2
+	s3 = fp[0]==0
+	if s3 goto L7
+	goto L8
+	L7: 
+	return 1 
+	L8: 
+	param fp[0]-1
+	call factorial, 1
+	s4 = y
+	return s4
+	
+	goto L9
+	L9:
+OutputInt: 
+InputInt: 
+	return 0 
+ReturnNumber: 
+	param void
+	call ReturnNumber, 1
+	s5 = y
+	return s5
+	return z . a 
 
-L1: 
+END
