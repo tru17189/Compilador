@@ -577,6 +577,7 @@ last_type_3 = ""
 last_type_return = ""
 last_type_accion = ""
 final_accion = ""
+wordArg3 = ""
 
 # para llevar control de las ranuras
 posicion_memoria = 0
@@ -629,7 +630,10 @@ def Variables(send_file, direcciones_memoria, posicion_memoria, content, varid, 
             if i == "]":
                 break
             elif i == "[":
-                offset_array = int(content[c+1])
+                try:
+                    offset_array = int(content[c+1])
+                except:
+                    offset_array = 1
             c += 1
     c= 0
 
@@ -821,6 +825,7 @@ def Variables(send_file, direcciones_memoria, posicion_memoria, content, varid, 
 def CallFuction(send_file, line_split, id, direccion, methodid, direcciones_memoria, posicion_memoria, ArgFun1, ArgFun3):
     sentence = ""
     parametros = []
+    types_variable = ["int", "char", "struct", "boolean"]
     numero_parametros = 1
     c = 0
     ans = ""
@@ -837,6 +842,17 @@ def CallFuction(send_file, line_split, id, direccion, methodid, direcciones_memo
         elif i == ")":
             status = False
     
+    if len(parametros) <= 0:
+        ans = "\n\tparam %s" % sentence
+
+    for i in parametros:
+        if i in types_variable:
+            parametros[c] = ""
+        elif i == "(":
+            parametros[c] = ""
+        c += 1
+    c = 0
+
     for i in parametros:
         if i in id:
             p = id.index(i)
@@ -860,6 +876,7 @@ def CallFuction(send_file, line_split, id, direccion, methodid, direcciones_memo
     send_file.append(ans)
     posicion_memoria += 1
 
+    # print("argfun3: ", ArgFun1, ArgFun2, ArgFun3)
     # return o asignacion?
     if ArgFun1 == "return":
         ans = "\n\treturn %s" % direcciones_memoria[posicion_memoria-1]
@@ -867,6 +884,8 @@ def CallFuction(send_file, line_split, id, direccion, methodid, direcciones_memo
         if ArgFun3 in id:
             p = id.index(ArgFun3)
             ArgFun3 = direccion[p]
+        if "}" in ArgFun3:
+            ArgFun3 = ArgFun3.replace("}", "")
         ans = "\n\t%s = %s" % (ArgFun3, direcciones_memoria[posicion_memoria-1])
     send_file.append(ans)
 
@@ -992,11 +1011,11 @@ def Structs_Varibles(send_file, line_split, id, direccion, direcciones_memoria, 
         else: 
             ans = "\n\t%s = 0 + 0" % direcciones_memoria[posicion_memoria]
             ans1 = "\n\tfp[%s]" % direcciones_memoria[posicion_memoria]
-            posicion_memoria += 1
             sentence = sentence.replace(Nombre_Struct, ans1)
             id.append(Nombre_Struct)
             direccion.append(ans1)
 
+    posicion_memoria += 1
     send_file.append(ans)
     send_file.append(sentence)
     return send_file, posicion_memoria, id, direccion
@@ -1037,6 +1056,7 @@ def CodigoTresDirreciones(tree, rule_names, indent = 0):
     global last_type_return
     global last_type_accion
     global final_accion
+    global wordArg3
 
     global posicion_memoria
     global direcciones_memoria
@@ -1069,9 +1089,23 @@ def CodigoTresDirreciones(tree, rule_names, indent = 0):
             ArgFun2 = word
             if (ArgFun1 in ["=", "return"]) and (ArgFun2 in MethodSymbolTable["methodId"]):
                 last_type_3 = "methodCall"
-        if (word in VarSymbolTable["VarId"]) and (last_type_3 != "methodCall"):
-            ArgFun3 = word
-                
+        
+        if word in end_line:
+            wordArg3 = ""
+        else:
+            if word != "=":
+                wordArg3 += word
+            else:
+                for i in wordArg3:
+                    if i in Variable_Memoria["id"]:
+                        p = Variable_Memoria["id"].index(i)
+                        wordArg3 = wordArg3.replace(i, Variable_Memoria["direccion"][p])
+                ArgFun3 = wordArg3
+                wordArg3 = ""
+    
+        '''if (word in VarSymbolTable["VarId"]) and (last_type_3 != "methodCall"):
+            ArgFun3 = word'''
+
         # Evaluamos tipos         
         try:
             last_type_1 = trunk["type1"][-1]
@@ -1156,6 +1190,10 @@ def Take_input():
 	global send_file
 	global posicion_memoria
 	global function_counter
+	global line_split
+	global last_type_accion
+	global last_type_3
+	global line
 	clean()
 	clean2()
 	archivo = FilenameInput.get("1.0", "end-1c")
@@ -1176,10 +1214,6 @@ def Take_input():
 		SecondMain(archivo2)
 		print("\nComienzo codigo de 3 dirrecciones\n")
 		ThirdMain(archivo2)
-		print("\ntrunk")
-		print(trunk["type1"])
-		print(trunk["type2"])
-		print(trunk["content"])
 		send_file.append("\n\nEND")
 		f = open("Codigo_3_direcciones.txt", "w")
 		for i in send_file:
@@ -1188,11 +1222,19 @@ def Take_input():
 		send_file = []
 		posicion_memoria = 0
 		function_counter = 1
+		line_split = []
+		last_type_accion = ""
+		last_type_3 = ""
+		line = ""
 
 def Take_input_v2():
 	global send_file
 	global posicion_memoria
 	global function_counter
+	global line_split
+	global last_type_accion
+	global last_type_3
+	global line
 	clean()
 	clean2()
 	archivo = Output.get("1.0", "end-1c")
@@ -1224,6 +1266,10 @@ def Take_input_v2():
 		send_file = []
 		posicion_memoria = 0
 		function_counter = 1
+		line_split = []
+		last_type_accion = ""
+		last_type_3 = ""
+		line = ""
 
 root = Tk()
 root.geometry("800x500")

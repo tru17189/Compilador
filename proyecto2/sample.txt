@@ -11,8 +11,7 @@ class Program {
     
     void main() {
         int x;
-        int y[10];
-	    y[2] = 2;
+        int y;
         x = funcion(y);
     }
 }
