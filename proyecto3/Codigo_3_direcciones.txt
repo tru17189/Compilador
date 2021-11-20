@@ -1,0 +1,27 @@
+
+funcion: 
+	t0 = fp[0] * 10
+	t1 = fp[0] / 10
+	t2 = t0 - t1
+	t3 = fp[0]==0
+	if t3 goto L1
+	goto L2
+	L1: 
+	return 10 
+	L2: 
+	return a 
+	goto L3
+	L3:
+	param fp[0]
+	call funcion, 1
+	t4 = y
+	return t4
+	
+main: 
+	fp[0] = funcion ( fp[4] ) 
+	param fp[4]
+	call funcion, 1
+	t5 = y
+	fp[0] = t5
+
+END

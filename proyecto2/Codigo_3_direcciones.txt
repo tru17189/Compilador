@@ -1,26 +1,69 @@
 
-factorial: 
-	t0 = fp[0]==0
-	if t0 goto L1
-	goto L2
+	t0 = fp[4]<10
 	L1: 
-	return 1 
-	L2: 
-	param fp[0]-1
-	call factorial, 1
-	t1 = y
-	return t1
-	
+	while t0 goto L2
 	goto L3
+	L2:
+	sp[8] [ fp[4] ] = InputInt ( ) 
+	param 
+	call InputInt, 1
+	t1 = y
+	A[fp[4]] = t1
+	t2 = fp[4] + 1
+	goto L1
 	L3:
-main: 
-	fp[0] [ 2 ] = 2 
-	fp[0] [ 3 ] = 3 
-	t2 = fp[0][2] + fp[0][3]
-	fp[0] [ 4 ] = factorial ( fp[0] [ 1 ] ) 
-	param fp[0][1]
-	call factorial, 1
+	param 
+	call Ordenar, 1
 	t3 = y
-	fp[0][4] = t3
+	fp[4] = t3
+	fp[4] = 0 
+	t4 = fp[4]<10
+	L4: 
+	while t4 goto L5
+	goto L6
+	L5:
+	param sp[8][fp[4]]
+	call OutputInt, 1
+	t5 = y
+	fp[4] = t5
+	t6 = fp[4] + 1
+	goto L4
+	L6:
+Ordenar: 
+	fp[4] = 0 
+	fp[0] = 0 
+	t7 = fp[4]<10
+	L7: 
+	while t7 goto L8
+	goto L9
+	L8:
+	param fp[4]
+	call Minimo, 1
+	s0 = y
+	Index = s0
+	fp[4] = sp[8] [ fp[8] ] 
+	sp[8] [ fp[8] ] = sp[8] [ fp[4] ] 
+	sp[8] [ fp[4] ] = fp[4] 
+	s1 = fp[4] + 1
+	goto L7
+	L9:
+Minimo: 
+	fp[0] = sp[8] [ fp[4] ] 
+	fp[4] = fp[4] 
+	s2 = fp[4]<10
+	L10: 
+	while s2 goto L11
+	goto L12
+	L11:
+	s3 = sp[8][fp[4]]<fp[0]
+	if s3 goto L13
+	goto L14
+	L13: 
+	fp[4] = fp[4] 
+	L14: 
+	s4 = fp[4] + 1
+	return index 
+InputInt: 
+	return 0 
 
 END

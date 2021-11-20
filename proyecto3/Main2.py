@@ -1,6 +1,6 @@
 from codecs import decode
 from os import SCHED_BATCH, stat, truncate
-import sys
+import os
 from tkinter import *
 from typing import Counter, get_origin
 from antlr4 import *
@@ -8,6 +8,8 @@ from antlr4.tree.Trees import  TerminalNode
 from DecafLexer import DecafLexer
 from DecafParser import DecafParser
 from DecafListener import DecafListener
+import time
+from GetReg_1 import getreg
 
 varDeclaration = False
 parameterType = False
@@ -585,6 +587,9 @@ direcciones_memoria = ["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "s0",
                         "s1", "s2", "s3", "s4", "s5", "s6", "s7", "t8", "t9"]
 posibles_acciones = ["if", "while", "for"]
 
+# extras
+fin_global_status = False
+
 # Variables en el lenguaje intermedio
 Variable_Memoria = {
     "id": [],
@@ -1066,6 +1071,8 @@ def CodigoTresDirreciones(tree, rule_names, indent = 0):
     global direcciones_memoria
     global posibles_acciones
 
+    global fin_global_status
+
     if tree.getText() == "<EOF>":
         return
     elif isinstance(tree, TerminalNode):
@@ -1083,6 +1090,12 @@ def CodigoTresDirreciones(tree, rule_names, indent = 0):
             final_accion = "\n\tgoto L%s\n\tL%s:" % (p, p)
             function_counter += 1
 
+        # Terminamos globales
+        if word in VarSymbolTable["VarId"]:
+            global_index = VarSymbolTable["VarId"].index(word)
+            if VarSymbolTable["Scope"][global_index] == "Program":
+                fin_global_status = True
+        
         # Evaluamos si el tipo de return (con funcion o sin)
         if word == "return":
             last_type_return = "returnCall"
@@ -1118,7 +1131,7 @@ def CodigoTresDirreciones(tree, rule_names, indent = 0):
             last_type_1 = ""
             last_type_2 = ""
         # Guardamos el contenido para una definicion
-        if (last_type_1 == 'declaration') and (last_type_2 == 'methodDeclaration'):
+        if ((last_type_1 == 'declaration') and (last_type_2 == 'methodDeclaration')) or ((fin_global_status == True) and (last_type_1 == 'methodDeclaration') and (last_type_2 == 'declaration')):
             if word in end_line:
                 trunk["type1"], trunk["type2"], trunk["content"], line_split, line = cleaner(trunk["type1"], trunk["type2"], trunk["content"], line_split, line)
                 send_file, function_counter = DeclaracionMetodo(send_file, function_counter, line_split, MethodSymbolTable["methodId"])
@@ -1127,7 +1140,7 @@ def CodigoTresDirreciones(tree, rule_names, indent = 0):
             else:
                 line_split.append(word)
         # Declaracion de una variable o declaracion en general 
-        elif (last_type_1 == 'statement') and (last_type_2 == 'location'):
+        elif ((last_type_1 == 'statement') and (last_type_2 == 'location')) or ((fin_global_status == True) and (last_type_1 == 'location') and (last_type_2 == 'statement')):
             if word in end_line:
                 trunk["type1"], trunk["type2"], trunk["content"], line_split, line = cleaner(trunk["type1"], trunk["type2"], trunk["content"], line_split, line)
                 struct_declaration = False
@@ -1192,7 +1205,7 @@ def CodigoTresDirreciones(tree, rule_names, indent = 0):
             elif Puente_Tipo == True:
                 trunk["type2"].append(rule_names[tree.getRuleIndex()])
                 Puente_Tipo = False
-        # print("{0}R='{1}'".format("  " * indent, rule_names[tree.getRuleIndex()]))
+        #print("{0}R='{1}'".format("  " * indent, rule_names[tree.getRuleIndex()]))
         if (tree.children != None):
             for child in tree.children:
                 CodigoTresDirreciones(child, rule_names, indent + 1)
@@ -1229,6 +1242,9 @@ def Take_input():
 		f = open("Codigo_3_direcciones.txt", "w")
 		for i in send_file:
 			f.write(i)
+
+		print("\nComienzo traduccion a MIPS\n")
+
 		print("FIN DEL RECORRIDO")
 		send_file = []
 		posicion_memoria = 0
@@ -1240,6 +1256,7 @@ def Take_input():
 
 def Take_input_v2():
 	global send_file
+	global send_final
 	global posicion_memoria
 	global function_counter
 	global line_split
@@ -1273,7 +1290,7 @@ def Take_input_v2():
 		f = open("Codigo_3_direcciones.txt", "w")
 		for i in send_file:
 			f.write(i)
-		print("FIN DEL RECORRIDO")
+
 		send_file = []
 		posicion_memoria = 0
 		function_counter = 1
@@ -1281,6 +1298,12 @@ def Take_input_v2():
 		last_type_accion = ""
 		last_type_3 = ""
 		line = ""
+
+		print("FIN DEL RECORRIDO")
+
+def Take_input_and_getreg():
+    Take_input()
+    getreg(Variable_Memoria["id"], Variable_Memoria["direccion"])
 
 root = Tk()
 root.geometry("800x500")
@@ -1297,7 +1320,7 @@ Output = Text(root, height = 20,
 Display = Button(root, height = 2,
 				width = 20,
 				text ="Primera option",
-				command = lambda:Take_input())
+				command = lambda:Take_input_and_getreg())
 Display2 = Button(root, height = 2,
 				width = 20,
 				text ="Segunda option",
